@@ -1,0 +1,60 @@
+# --- IDE / OS Specific ---
+.vscode/
+.idea/
+.DS_Store
+*.swp
+thumbs.db
+
+# --- Node.js / Dependencies ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+
+# --- NestJS (Backend) ---
+dist/
+/db
+*.db
+*.sqlite
+/uploads
+/temp
+prebuild.log
+
+# --- Vite + React (Frontend) ---
+dist-browser/
+out/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- AI / Python (If using for PhishGuard) ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+.python-version
+
+# --- Flutter (Mobile) ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# --- Testing ---
+/coverage
+.nyc_output
+
+# --- Logs ---
+logs
+*.log
+npm-debug.log*
