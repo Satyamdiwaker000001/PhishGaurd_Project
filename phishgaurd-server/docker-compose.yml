@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # NestJS Backend
+  phishguard-api:
+    build: .
+    container_name: phishguard-api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis-db
+    environment:
+      - REDIS_HOST=redis-db
+      - REDIS_PORT=6379
+    networks:
+      - phishguard-network
+
+  # Redis Database
+  redis-db:
+    image: redis:alpine
+    container_name: phishguard-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - phishguard-network
+
+  # Redis Insight (GUI) - Accessible at http://localhost:8001
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: phishguard-redis-insight
+    ports:
+      - "8001:8001"
+    environment:
+      - RI_APP_HOST=0.0.0.0
+      - RI_APP_PORT=8001
+    depends_on:
+      - redis-db
+    networks:
+      - phishguard-network
+
+networks:
+  phishguard-network:
+    driver: bridge
