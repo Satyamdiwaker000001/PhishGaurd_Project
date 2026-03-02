@@ -2,19 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* .bg-grid {
-  background-size: 40px 40px;
-  background-image:
-    linear-gradient(to right, #1a1a1a 1px, transparent 1px),
-    linear-gradient(to bottom, #1a1a1a 1px, transparent 1px);
-} */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-body {
-  background-color: #141414;
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
