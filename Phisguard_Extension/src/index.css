@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@import "tailwindcss";
+
+/* Extension ka fixed size aur dark theme background */
+body {
+  width: 350px;
+  min-height: 500px;
+  margin: 0;
+  background-color: #0F172A; /* Slate 900 - Dark SOC Vibe */
+  color: white;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
