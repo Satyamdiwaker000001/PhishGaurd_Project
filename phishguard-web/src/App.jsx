@@ -1,24 +1,46 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import Authentication from "./pages/Authentication";
+import Dashboard from "./pages/Dashboard";
 import './App.css';
+
+/**
+ * ProtectedRoute Component
+ * Prevents unauthorized access to dashboard
+ */
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) return <Navigate to="/login" replace />;
+  return children;
+};
 
 function App() {
   return (
     <Router>
-      {/* Wrapper with no-scrollbar class for professional clean look */}
-      <div className="no-scrollbar">
+      <div className="no-scrollbar mesh-gradient min-h-screen">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          {/* Props pass ho rahe hain authentication logic handle karne ke liye */}
           <Route path="/login" element={<Authentication isLoginMode={true} />} />
           <Route path="/signup" element={<Authentication isLoginMode={false} />} />
+          
+          {/* Dashboard Hub (Role-aware internally) */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Fallback to Home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>
   );
 }
 
-// FIXED: Semicolon added at the end for standard ES6 syntax
 export default App;
