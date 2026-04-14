@@ -1,0 +1,19 @@
+# Web Framework & Server
+fastapi==0.104.1
+uvicorn==0.24.0.post1
+python-multipart==0.0.6
+
+# Data Pipeline & Compression
+pandas==2.1.3
+pyarrow==14.0.1
+numpy==1.26.2
+
+# ML / DL Core (Lexical Lab)
+tensorflow==2.15.0
+scikit-learn==1.3.2
+h5py==3.10.0
+
+# Future Labs (Vision, NLP, Malware)
+transformers==4.35.2
+easyocr==1.7.1
+# androguard==3.4.0-a1 # Uncomment when working on APK lab
