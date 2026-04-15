@@ -167,6 +167,7 @@ const Dashboard = () => {
                                 <AdminDashboardView 
                                     history={history} 
                                     fetchHistory={fetchHistory}
+                                    activeTab={activeTab}
                                 />
                             )}
                             {activeTab === 'db' && user?.role === 'USER' && (

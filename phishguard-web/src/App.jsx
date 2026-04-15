@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import Authentication from "./pages/Authentication";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import './App.css';
 
@@ -24,6 +25,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Authentication isLoginMode={true} />} />
           <Route path="/signup" element={<Authentication isLoginMode={false} />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Dashboard Hub (Role-aware internally) */}
           <Route 

@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Terminal, Search, Zap, ShieldAlert, 
     ShieldCheck, RefreshCcw, History, ArrowRight,
-    Activity, Clock, Target, CheckCircle2
+    Activity, Clock, Target, CheckCircle2, FileUp, Smartphone, Image as ImageIcon
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import GlassBox from '../../components/ui/GlassBox';
@@ -13,6 +13,49 @@ const UserDashboardView = ({
     url, setUrl, isLoading, handleAnalyze, 
     result, setResult, history, setActiveTab 
 }) => {
+    const [scanType, setScanType] = useState('URL'); // URL, IMAGE, APK
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleFileChange = (e) => {
+        setSelectedFile(e.target.files[0]);
+    };
+
+    const handleFileScan = async (e) => {
+        e.preventDefault();
+        if (!selectedFile) return;
+
+        setIsProcessing(true);
+        setResult(null);
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
+        
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('userId', user?.id);
+
+        const endpoint = scanType === 'IMAGE' ? 'image' : 'apk';
+
+        try {
+            const response = await fetch(`http://localhost:3000/analysis/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setResult(data);
+                // In a real app we'd refresh history here too, 
+                // but since history is passed as prop, we assume parent handles it or user refreshes.
+            }
+        } catch (err) {
+            console.error('File analysis failed:', err);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
     return (
         <div className="space-y-12 pb-20">
             {/* HERO SECTION - ANALYZE */}
@@ -23,16 +66,18 @@ const UserDashboardView = ({
                     <div className="bg-[#0A0A0B]/40 rounded-[1.8rem] p-10 md:p-14 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[80px] -mr-32 -mt-32" />
                         
-                        <div className="flex items-center gap-6 mb-12">
-                            <div className="p-5 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-lg shadow-indigo-500/5 group-hover:scale-110 transition-transform duration-500">
-                                <Terminal size={28} />
-                            </div>
-                            <div>
-                                <h3 className="text-3xl font-black text-white uppercase tracking-tight">Intercept Protocol</h3>
-                                <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.3em] mt-2 flex items-center gap-2">
-                                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                    AI Neural Engine: Online & Ready
-                                </p>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                            <div className="flex items-center gap-6">
+                                <div className="p-5 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-lg shadow-indigo-500/5 group-hover:scale-110 transition-transform duration-500">
+                                    <Terminal size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-3xl font-black text-white uppercase tracking-tight">Intercept Protocol</h3>
+                                    <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.3em] mt-2 flex items-center gap-2">
+                                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                        Neural Core: Autonomous URL Verification
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -43,10 +88,10 @@ const UserDashboardView = ({
                                 </div>
                                 <input 
                                     type="text" 
-                                    placeholder="Enter encrypted or suspicious URL for neural verification..." 
+                                    placeholder="Enter suspicious URL for neural verification..." 
                                     value={url}
                                     onChange={(e) => setUrl(e.target.value)}
-                                    className="w-full bg-white/[0.03] border border-white/10 rounded-3xl py-8 pl-18 pr-60 text-base outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all text-white font-mono placeholder:text-slate-700 shadow-2xl"
+                                    className="w-full bg-white/[0.03] border border-white/10 rounded-3xl py-8 pl-18 pr-60 text-base outline-none focus:border-indigo-500/50 focus:bg-white/[0.05] transition-all text-white font-mono placeholder:text-slate-700 shadow-2xl uppercase tracking-tight"
                                 />
                                 <div className="absolute right-4 top-4 bottom-4 flex gap-3">
                                     <Button 
@@ -55,7 +100,7 @@ const UserDashboardView = ({
                                         className="h-full px-12 shadow-2xl shadow-indigo-600/30 rounded-2xl text-xs font-black uppercase tracking-widest"
                                     >
                                         {!isLoading && <Zap size={18} className="mr-3" />}
-                                        Initialize Scan
+                                        Initialize
                                     </Button>
                                 </div>
                             </div>
@@ -115,6 +160,16 @@ const UserDashboardView = ({
     );
 };
 
+const ScanTypeBtn = ({ active, onClick, icon, label }) => (
+    <button 
+        onClick={onClick}
+        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 text-[9px] font-black uppercase tracking-widest ${active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-slate-300'}`}
+    >
+        {icon}
+        {label}
+    </button>
+);
+
 const ResultDisplay = ({ result, onClose }) => {
     const isPhishing = result.is_phishing;
     const isWhitelisted = result.is_whitelisted;
@@ -137,8 +192,8 @@ const ResultDisplay = ({ result, onClose }) => {
                                 {isPhishing ? 'THREAT LEVEL: CRITICAL' : isWhitelisted ? 'WHITELISTED' : 'SAFE'}
                             </Badge>
                         </div>
-                        <p className="text-slate-400 text-sm font-mono max-w-2xl break-all italic opacity-80 mb-8 border-l-2 border-white/5 pl-4 py-2">
-                           Target: {result.url}
+                        <p className="text-slate-400 text-sm font-mono max-w-2xl break-all italic opacity-80 mb-8 border-l-2 border-white/5 pl-4 py-2 uppercase tracking-tight">
+                           Target: {result.url || 'Analyzed Payload'}
                         </p>
                         
                         <div className="flex flex-wrap gap-12 items-center justify-center md:justify-start">
@@ -146,6 +201,28 @@ const ResultDisplay = ({ result, onClose }) => {
                             <ResultStat label="Risk Assessment" value={result.threat_level || 'Minimal'} color={isPhishing ? 'red' : 'emerald'} />
                             <ResultStat label="Neural Path" value="Hybrid-LSTM V2" color="slate" />
                         </div>
+
+                        {/* METADATA INSIGHTS */}
+                        {(result.imageMetadata || result.apkMetadata) && (
+                            <div className="mt-8 p-6 bg-white/[0.03] rounded-2xl border border-white/5">
+                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Neural Metadata Extraction</p>
+                                <div className="grid grid-cols-2 gap-6">
+                                    {result.imageMetadata && (
+                                        <>
+                                            <MetaItem label="Format" value={result.imageMetadata.imageFormat} />
+                                            <MetaItem label="OCR Text" value={result.imageMetadata.extractedText || 'None'} />
+                                            <MetaItem label="QR Found" value={result.imageMetadata.containsQr ? 'YES' : 'NO'} />
+                                        </>
+                                    )}
+                                    {result.apkMetadata && (
+                                        <>
+                                            <MetaItem label="Package" value={result.apkMetadata.packageName} />
+                                            <MetaItem label="Permissions" value={result.apkMetadata.dangerousPermissions?.join(', ') || 'Low'} />
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         {/* THREAT INSIGHTS (XAI) */}
                         {result.reasons && result.reasons.length > 0 && (
@@ -210,6 +287,13 @@ const HistoryCard = ({ record, index }) => (
             </div>
         </div>
     </motion.div>
+);
+
+const MetaItem = ({ label, value }) => (
+    <div>
+        <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-[10px] font-mono text-slate-300 truncate uppercase tracking-tight">{value}</p>
+    </div>
 );
 
 const MiniStat = ({ icon, label, value, color = "text-white" }) => (
