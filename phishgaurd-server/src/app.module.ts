@@ -24,6 +24,7 @@ import { WhitelistModule } from './whitelist/whitelist.module';
     AnalysisModule,
     UsersModule,
     AuthModule,
+    WhitelistModule,
   ],
   controllers: [AppController],
   providers: [AppService],
