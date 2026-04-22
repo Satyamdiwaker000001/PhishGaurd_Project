@@ -1,6 +1,5 @@
 import os
-import tensorflow as tf
-import pickle
+import joblib
 import json
 
 class ModelLoader:
@@ -18,22 +17,22 @@ class ModelLoader:
         
         print(f"Loading models from: {models_path}")
         
-        # Load URL CNN Model
+        # Load URL Scikit-Learn Model
         try:
-            self.url_model = tf.keras.models.load_model(os.path.join(models_path, "phishguard_model_cnn.h5"))
-            print("Successfully loaded URL CNN model.")
+            # Try to load the new joblib model first
+            joblib_path = os.path.join(models_path, "phishguard_url_model.joblib")
+            if os.path.exists(joblib_path):
+                self.url_model = joblib.load(joblib_path)
+                print("Successfully loaded URL Scikit-Learn model.")
+            else:
+                print(f"Warning: Model not found at {joblib_path}. Please run lexical_lab.py first.")
+                self.url_model = None
         except Exception as e:
             print(f"Error loading URL model: {e}")
             self.url_model = None
 
-        # Load Tokenizer Metadata
-        try:
-            with open(os.path.join(models_path, "tokenizer_dictionary.json"), 'r') as f:
-                self.char_index = json.load(f)
-            print("Successfully loaded tokenizer dictionary.")
-        except Exception as e:
-            print(f"Error loading tokenizer: {e}")
-            self.char_index = {}
+        # Placeholder for Legacy Tokenizer Metadata (No longer strictly needed with Pipelines)
+        self.char_index = {}
 
     def get_url_model(self):
         return self.url_model

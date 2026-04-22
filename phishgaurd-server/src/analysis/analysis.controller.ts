@@ -1,4 +1,15 @@
-import { Controller, Post, Get, Delete, Body, Param, UseGuards, Req, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Req,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { AnalysisService } from './analysis.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -11,7 +22,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class AnalysisController {
   constructor(private readonly analysisService: AnalysisService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post('url')
   async analyzeUrl(@Body('url') url: string, @Req() req: any) {
     const userId = req.user?.id;
@@ -40,13 +50,19 @@ export class AnalysisController {
 
   @Post('image')
   @UseInterceptors(FileInterceptor('file'))
-  async analyzeImage(@UploadedFile() file: Express.Multer.File, @Body('userId') userId?: string) {
+  async analyzeImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('userId') userId?: string,
+  ) {
     return this.analysisService.analyzeImage(file, userId);
   }
 
   @Post('apk')
   @UseInterceptors(FileInterceptor('file'))
-  async analyzeApk(@UploadedFile() file: Express.Multer.File, @Body('userId') userId?: string) {
+  async analyzeApk(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('userId') userId?: string,
+  ) {
     return this.analysisService.analyzeApk(file, userId);
   }
 

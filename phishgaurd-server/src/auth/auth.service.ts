@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,10 +27,13 @@ export class AuthService {
   async register(email: string, pass: string, name: string) {
     const existingUser = await this.usersService.findOneByEmail(email);
     if (existingUser) {
-      throw new ConflictException('Identity already registered in the Sentinel Network');
+      throw new ConflictException(
+        'Identity already registered in the Sentinel Network',
+      );
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(pass)) {
       throw new ConflictException(
         'Password must be at least 8 characters and include uppercase, lowercase, numbers, and special symbols.',
@@ -33,22 +41,28 @@ export class AuthService {
     }
 
     const tempEmailDomains = [
-      'mailinator.com', 'guerrillamail.com', 'temp-mail.org', 
-      '10minutemail.com', 'yopmail.com', 'sharklasers.com'
+      'mailinator.com',
+      'guerrillamail.com',
+      'temp-mail.org',
+      '10minutemail.com',
+      'yopmail.com',
+      'sharklasers.com',
     ];
     const emailDomain = email.split('@')[1]?.toLowerCase();
     if (tempEmailDomains.includes(emailDomain)) {
-      throw new ConflictException('Unauthorized intelligence source: Temporary emails are prohibited.');
+      throw new ConflictException(
+        'Unauthorized intelligence source: Temporary emails are prohibited.',
+      );
     }
 
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(pass, salt);
 
     const adminEmail = this.configService.get<string>('ADMIN_EMAIL');
-    
+
     let role = UserRole.USER;
     if (adminEmail && email.toLowerCase() === adminEmail.toLowerCase()) {
-        role = UserRole.ADMIN;
+      role = UserRole.ADMIN;
     }
 
     const user = await this.usersService.create({
@@ -102,7 +116,9 @@ export class AuthService {
       expiresAt,
     });
 
-    console.log(`[AUTHENTICATION] Password Reset Protocol Initiated for ${email}`);
+    console.log(
+      `[AUTHENTICATION] Password Reset Protocol Initiated for ${email}`,
+    );
     console.log(`[PASS] Reset Token: ${token}`);
     console.log(`[LINK] http://localhost:5173/reset-password?token=${token}`);
 
@@ -119,7 +135,8 @@ export class AuthService {
       throw new UnauthorizedException('Reset token has expired or is invalid.');
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(newPass)) {
       throw new ConflictException(
         'Password must be at least 8 characters and include uppercase, lowercase, numbers, and special symbols.',
@@ -132,6 +149,8 @@ export class AuthService {
     await this.usersService.updatePassword(resetEntry.userId, hash);
     await this.passwordResetRepository.delete(resetEntry.id);
 
-    return { message: 'Neural password updated successfully. Protocol terminated.' };
+    return {
+      message: 'Neural password updated successfully. Protocol terminated.',
+    };
   }
 }

@@ -41,14 +41,22 @@ function App() {
       const url = new URL(tab.url);
       setDomain(url.hostname);
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const response = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: tab.url })
+        body: JSON.stringify({ url: tab.url }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const result = await response.json();
+        console.log('[PhishGuard] Popup Scan Result:', result);
+        
         const probability = result.is_phishing 
           ? Math.round(result.confidence * 100) 
           : Math.round((1 - result.confidence) * 100);
@@ -56,9 +64,18 @@ function App() {
         setPhishingProb(probability);
         setIsWhitelisted(result.is_whitelisted || false);
         setReasons(result.reasons || []);
+      } else {
+        console.error(`[PhishGuard] Server Error: ${response.status}`);
+        setPhishingProb(0);
+        setReasons(['Server analysis unavailable.']);
       }
     } catch (error) {
-      console.error('[PhishGuard] Analysis Failed:', error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('[PhishGuard] Popup Analysis Timed Out');
+        setReasons(['Analysis timed out.']);
+      } else {
+        console.error('[PhishGuard] Analysis Failed:', error);
+      }
       setPhishingProb(0);
     } finally {
       setLoading(false);

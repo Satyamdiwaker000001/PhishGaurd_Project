@@ -24,7 +24,7 @@ export class AnalysisService {
   async analyzeUrl(url: string, userId?: string) {
     try {
       const isWhitelisted = await this.whitelistService.isWhitelisted(url);
-      
+
       let result;
       if (isWhitelisted) {
         result = {
@@ -32,7 +32,7 @@ export class AnalysisService {
           is_phishing: false,
           confidence: 1.0,
           threat_level: 'Low',
-          is_whitelisted: true
+          is_whitelisted: true,
         };
       } else {
         const response = await fetch(`${this.aiEngineUrl}/url/analyze`, {
@@ -62,7 +62,10 @@ export class AnalysisService {
       return result;
     } catch (error) {
       console.error('Analysis failed:', error);
-      throw new HttpException('Failed to process analysis request', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Failed to process analysis request',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -75,11 +78,11 @@ export class AnalysisService {
         confidence: 0.95,
         threat_level: 'Low',
         metadata: {
-            fileHash: 'sha256_mock_hash',
-            imageFormat: file.mimetype,
-            containsQr: false,
-            extractedText: 'Sample extracted text from image'
-        }
+          fileHash: 'sha256_mock_hash',
+          imageFormat: file.mimetype,
+          containsQr: false,
+          extractedText: 'Sample extracted text from image',
+        },
       };
 
       const record = this.analysisRecordRepository.create({
@@ -88,7 +91,7 @@ export class AnalysisService {
         confidence: result.confidence,
         threat_level: result.threat_level,
         user_id: userId ?? null,
-        reasons: ['Visual integrity verified']
+        reasons: ['Visual integrity verified'],
       });
       const savedRecord = await this.analysisRecordRepository.save(record);
 
@@ -97,50 +100,56 @@ export class AnalysisService {
         fileHash: result.metadata.fileHash,
         imageFormat: result.metadata.imageFormat,
         containsQr: result.metadata.containsQr,
-        extractedText: result.metadata.extractedText
+        extractedText: result.metadata.extractedText,
       });
       await this.imageMetadataRepository.save(metadata);
 
       return { ...result, id: savedRecord.id };
     } catch (error) {
-        throw new HttpException('Image analysis failed', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Image analysis failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   async analyzeApk(file: Express.Multer.File, userId?: string) {
     try {
-        const result = {
-            is_phishing: true,
-            confidence: 0.88,
-            threat_level: 'High',
-            metadata: {
-                fileHash: 'sha256_apk_hash',
-                packageName: 'com.attacker.phishing',
-                dangerousPermissions: ['READ_SMS', 'SEND_SMS', 'INTERNET']
-            }
-        };
+      const result = {
+        is_phishing: true,
+        confidence: 0.88,
+        threat_level: 'High',
+        metadata: {
+          fileHash: 'sha256_apk_hash',
+          packageName: 'com.attacker.phishing',
+          dangerousPermissions: ['READ_SMS', 'SEND_SMS', 'INTERNET'],
+        },
+      };
 
-        const record = this.analysisRecordRepository.create({
-            url: `FILE_APK:${file.originalname}`,
-            is_phishing: result.is_phishing,
-            confidence: result.confidence,
-            threat_level: result.threat_level,
-            user_id: userId ?? null,
-            reasons: ['Suspicious permissions detected', 'Unknown publisher']
-        });
-        const savedRecord = await this.analysisRecordRepository.save(record);
+      const record = this.analysisRecordRepository.create({
+        url: `FILE_APK:${file.originalname}`,
+        is_phishing: result.is_phishing,
+        confidence: result.confidence,
+        threat_level: result.threat_level,
+        user_id: userId ?? null,
+        reasons: ['Suspicious permissions detected', 'Unknown publisher'],
+      });
+      const savedRecord = await this.analysisRecordRepository.save(record);
 
-        const metadata = this.apkMetadataRepository.create({
-            logId: savedRecord.id,
-            fileHash: result.metadata.fileHash,
-            packageName: result.metadata.packageName,
-            dangerousPermissions: result.metadata.dangerousPermissions
-        });
-        await this.apkMetadataRepository.save(metadata);
+      const metadata = this.apkMetadataRepository.create({
+        logId: savedRecord.id,
+        fileHash: result.metadata.fileHash,
+        packageName: result.metadata.packageName,
+        dangerousPermissions: result.metadata.dangerousPermissions,
+      });
+      await this.apkMetadataRepository.save(metadata);
 
-        return { ...result, id: savedRecord.id };
+      return { ...result, id: savedRecord.id };
     } catch (error) {
-        throw new HttpException('APK analysis failed', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'APK analysis failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -167,32 +176,38 @@ export class AnalysisService {
 
   async getGlobalStats() {
     const total = await this.analysisRecordRepository.count();
-    const malicious = await this.analysisRecordRepository.count({ where: { is_phishing: true } });
-    
+    const malicious = await this.analysisRecordRepository.count({
+      where: { is_phishing: true },
+    });
+
     // Active agents (distinct user IDs)
-    const activeUsersResult = await this.analysisRecordRepository.createQueryBuilder('record')
+    const activeUsersResult = await this.analysisRecordRepository
+      .createQueryBuilder('record')
       .select('COUNT(DISTINCT record.user_id)', 'count')
       .getRawOne();
-    
+
     const activeUsers = parseInt(activeUsersResult.count || '0', 10);
 
     // Neural Load (CPU Load Avg - first value represents 1min average)
     // We scale it to a percentage (0 to 100)
     const loadAvg = os.loadavg()[0];
     const cpuCount = os.cpus().length;
-    const neuralLoad = Math.min(parseFloat(((loadAvg / cpuCount) * 100).toFixed(1)), 100);
+    const neuralLoad = Math.min(
+      parseFloat(((loadAvg / cpuCount) * 100).toFixed(1)),
+      100,
+    );
 
     // Neural Latency (Simulated based on average processing time)
     const neuralLatency = Math.floor(Math.random() * 20) + 10; // 10ms - 30ms
 
     return {
-        totalScans: total,
-        maliciousScans: malicious,
-        threatRate: total > 0 ? ((malicious / total) * 100).toFixed(1) : 0,
-        systemStatus: loadAvg < cpuCount ? 'Optimal' : 'Loaded',
-        activeUsers,
-        neuralLoad,
-        neuralLatency
+      totalScans: total,
+      maliciousScans: malicious,
+      threatRate: total > 0 ? ((malicious / total) * 100).toFixed(1) : 0,
+      systemStatus: loadAvg < cpuCount ? 'Optimal' : 'Loaded',
+      activeUsers,
+      neuralLoad,
+      neuralLatency,
     };
   }
 }

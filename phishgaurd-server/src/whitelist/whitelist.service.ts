@@ -23,8 +23,10 @@ export class WhitelistService {
   }
 
   async addDomain(domain: string, adminId: string): Promise<GlobalWhitelist> {
-    console.log(`[WHITELIST] Attempting to add domain: ${domain} by Admin: ${adminId}`);
-    
+    console.log(
+      `[WHITELIST] Attempting to add domain: ${domain} by Admin: ${adminId}`,
+    );
+
     if (!domain) {
       throw new Error('Domain identifier is missing');
     }
@@ -32,9 +34,13 @@ export class WhitelistService {
     const domainName = this.extractRootDomain(domain);
     console.log(`[WHITELIST] Extracted root domain: ${domainName}`);
 
-    const existing = await this.whitelistRepository.findOne({ where: { domainName } });
+    const existing = await this.whitelistRepository.findOne({
+      where: { domainName },
+    });
     if (existing) {
-      console.log(`[WHITELIST] Domain ${domainName} already exists in registry.`);
+      console.log(
+        `[WHITELIST] Domain ${domainName} already exists in registry.`,
+      );
       return existing;
     }
 
@@ -42,9 +48,11 @@ export class WhitelistService {
       domainName,
       addedByAdmin: adminId,
     });
-    
+
     const saved = await this.whitelistRepository.save(newEntry);
-    console.log(`[WHITELIST] Successfully persisted domain: ${domainName} (ID: ${saved.id})`);
+    console.log(
+      `[WHITELIST] Successfully persisted domain: ${domainName} (ID: ${saved.id})`,
+    );
     return saved;
   }
 
@@ -53,14 +61,22 @@ export class WhitelistService {
     await this.whitelistRepository.delete(id);
   }
 
-  async updateDomain(id: number, domain: string, adminId: string): Promise<GlobalWhitelist> {
-    console.log(`[WHITELIST] Updating domain registry for ID: ${id} to ${domain} by Admin: ${adminId}`);
+  async updateDomain(
+    id: number,
+    domain: string,
+    adminId: string,
+  ): Promise<GlobalWhitelist> {
+    console.log(
+      `[WHITELIST] Updating domain registry for ID: ${id} to ${domain} by Admin: ${adminId}`,
+    );
     const domainName = this.extractRootDomain(domain);
-    await this.whitelistRepository.update(id, { 
+    await this.whitelistRepository.update(id, {
       domainName,
-      addedByAdmin: adminId 
+      addedByAdmin: adminId,
     });
-    return this.whitelistRepository.findOne({ where: { id } }) as Promise<GlobalWhitelist>;
+    return this.whitelistRepository.findOne({
+      where: { id },
+    }) as Promise<GlobalWhitelist>;
   }
 
   private extractRootDomain(url: string): string {
@@ -75,7 +91,7 @@ export class WhitelistService {
       domain = domain.split('?')[0];
       // Remove port
       domain = domain.split(':')[0];
-      
+
       // Handle www.
       if (domain.startsWith('www.')) {
         domain = domain.substring(4);
@@ -83,7 +99,9 @@ export class WhitelistService {
 
       // Basic validation: must have at least one dot
       if (!domain.includes('.')) {
-        console.warn(`[WHITELIST] Warning: domain ${domain} appears malformed.`);
+        console.warn(
+          `[WHITELIST] Warning: domain ${domain} appears malformed.`,
+        );
       }
 
       return domain;

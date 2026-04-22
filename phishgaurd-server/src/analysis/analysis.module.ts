@@ -10,7 +10,7 @@ import { WhitelistModule } from '../whitelist/whitelist.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([AnalysisRecord, ImageMetadata, ApkMetadata]),
-    WhitelistModule
+    WhitelistModule,
   ],
   controllers: [AnalysisController],
   providers: [AnalysisService],

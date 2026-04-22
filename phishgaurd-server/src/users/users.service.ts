@@ -18,7 +18,8 @@ export class UsersService implements OnModuleInit {
   }
 
   private async seedAdmin() {
-    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') || 'admin@phishguard.com';
+    const adminEmail =
+      this.configService.get<string>('ADMIN_EMAIL') || 'admin@phishguard.com';
     const existingAdmin = await this.findOneByEmail(adminEmail);
 
     if (!existingAdmin) {

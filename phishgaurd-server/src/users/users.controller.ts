@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Delete, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -21,9 +30,9 @@ export class UsersController {
   async getStats() {
     const total = await this.usersService.count();
     return {
-        totalUsers: total,
-        activeSentinels: total,
-        systemHealth: 'Optimal'
+      totalUsers: total,
+      activeSentinels: total,
+      systemHealth: 'Optimal',
     };
   }
 
