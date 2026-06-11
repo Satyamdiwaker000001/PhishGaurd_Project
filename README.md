@@ -4,3 +4,4 @@ Real-time malicious URL interception system featuring machine learning, microser
 
 # Tech Stack
 ### Reactjs
+### TypeScript
